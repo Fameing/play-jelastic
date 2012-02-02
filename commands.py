@@ -18,7 +18,7 @@ MODULE = 'jelastic'
 
 # Commands that are specific to your module
 
-COMMANDS = ['jelastic:deploy']
+COMMANDS = ['jelastic:deploy','jelastic:publish']
 java_args = []
 war_path = None
 message = []
@@ -35,27 +35,45 @@ def execute(**kargs):
     args = kargs.get("args")
     env = kargs.get("env")
     parser = MyOptionParser()
-    parser.add_option("-d", "--domain", dest="domain", help="Domain")
+    parser.add_option("-l", "--login", dest="login", help="Your login")
+    parser.add_option("-p", "--password", dest="password", help="Your password")
+    parser.add_option("-c", "--context", dest = "context", help="Deploy context")
+    parser.add_option("-e", "--environment", dest = "environment", help="Environment name")
+    parser.add_option("-a", "--apihoster", dest = "apihoster", help="Url to api hoster")
     options, args = parser.parse_args(args)
     app.check()
+    war_path = None
+    java_args = []
 
     jelastic_command = command[command.index(":") + 1:]
 
-    for item in ["domain"]:
+    for item in ["login", "password", "context", "environment", "apihoster"]:
         if eval('options.%s' % item) is not None:
             java_args.append("-Djelastic.api.%s=%s" % (item, eval('options.%s' % item)))
+            print java_args
 
-    if "jelastic:deploy" in jelastic_command:
-        war_path = generate_war(app, env, args)
+    if "deploy" in jelastic_command:
+        war_path =  generate_war(app, env, args)
         java_args.append("-Djelastic.app.war=%s" % war_path)
-    java_cmd = app.java_cmd(java_args, None, "play.modules.jelastic.Jelastic", [jelastic_command])
-    try:
-        print java_args
-        subprocess.call(java_cmd, env=os.environ)
-    except OSError:
-        print "Could not execute the java executable, please make sure the JAVA_HOME environment variable is set properly (the java executable should reside at JAVA_HOME/bin/java). "
-        sys.exit(-1)
-    print
+        java_cmd = app.java_cmd(java_args, None, "play.modules.jelastic.Jelastic", [jelastic_command])
+        try:
+            subprocess.call(java_cmd, env=os.environ)
+        except OSError:
+            print "Could not execute the java executable, please make sure the JAVA_HOME environment variable is set properly (the java executable should reside at JAVA_HOME/bin/java). "
+            sys.exit(-1)
+        print
+
+    if "publish" in jelastic_command:
+        war_path =  generate_war(app, env, args)
+        java_args.append("-Djelastic.app.war=%s" % war_path)
+
+        java_cmd = app.java_cmd(java_args, None, "play.modules.jelastic.Jelastic", [jelastic_command])
+        try:
+            subprocess.call(java_cmd, env=os.environ)
+        except OSError:
+            print "Could not execute the java executable, please make sure the JAVA_HOME environment variable is set properly (the java executable should reside at JAVA_HOME/bin/java). "
+            sys.exit(-1)
+        print
 
 
 def generate_war(app, env, args):
@@ -99,16 +117,10 @@ def after(**kargs):
     if command == "new":
         appconf = open(os.path.join(app.path, 'conf/application.conf'), 'a')
         appconf.write("\n")
-        appconf.write("# Jelastic Database configuration\n")
-        appconf.write("# ~~~~~\n")
-        appconf.write("# %jelastic.db=java:/comp/env/jdbc/yourProject\n\n")
-        appconf.write("# %jelastic.db.url=jdbc:jelastic://yourDBName\n")
-        appconf.write("# %jelastic.db.driver=\n")
-        appconf.write("# %jelastic.db.user=\n")
-        appconf.write("# %jelastic.db.pass=\n\n")
-        appconf.write("# %jelastic.jpa.dialect=org.hibernate.dialect.MySQLDialect\n")
-        appconf.write("\n")
         appconf.write("# Jelastic Account configuration\n")
         appconf.write("# ~~~~~\n")
-        appconf.write("# %jelastic.user.email=your email key here\n")
-        appconf.write("# %jelastic.user.password=your secret password here\n")
+        appconf.write("# %jelastic.api.login=\n")
+        appconf.write("# %jelastic.api.password=\n")
+        appconf.write("# %jelastic.api.context=\n")
+        appconf.write("# %jelastic.api.environment=\n")
+        appconf.write("# %jelastic.api.apihoster=\n")
