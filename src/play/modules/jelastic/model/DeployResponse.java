@@ -53,6 +53,7 @@ public class DeployResponse {
     public static class Response{
         private int result;
         private String source;
+        private String error;
         private Responses[] responses;
 
         public int getResult() {
@@ -69,6 +70,14 @@ public class DeployResponse {
 
         public void setSource(String source) {
             this.source = source;
+        }
+
+        public String getError() {
+            return error;
+        }
+
+        public void setError(String error) {
+            this.error = error;
         }
 
         public Responses[] getResponses() {

@@ -21,6 +21,7 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import play.Logger;
 import play.Play;
 import play.modules.jelastic.model.AuthenticationResponse;
 import play.modules.jelastic.model.CreateObjectResponse;
@@ -204,7 +205,7 @@ public class Jelastic {
                     if (deployResponse.getResult() == 0 && deployResponse.getResponse().getResult() == 0 && deployResponse.getResponse().getResponses()[0].getResult() == 0) {
                         System.out.println(" : OK");
                     } else {
-                        System.err.println(" : " + deployResponse.getError());
+                        System.err.println(" : " + deployResponse.getResponse().getError());
                     }
                 } else {
                     System.err.println(" : " + createObjectResponse.getError());
@@ -252,17 +253,19 @@ public class Jelastic {
             qparams.add(new BasicNameValuePair("login", config.get("login")));
             qparams.add(new BasicNameValuePair("password", config.get("password")));
             URI uri = URIUtils.createURI(getShema(), config.get("apihoster"), getPort(), getUrlAuthentication(), URLEncodedUtils.format(qparams, "UTF-8"), null);
+            Logger.debug("Authentication url : " + uri.toString());
             HttpGet httpGet = new HttpGet(uri);
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             String responseBody = httpclient.execute(httpGet, responseHandler);
+            Logger.debug("Authentication response : " + responseBody);
             Gson gson = new GsonBuilder().setVersion(version).create();
             authenticationResponse = gson.fromJson(responseBody, AuthenticationResponse.class);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         } catch (ClientProtocolException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         }
         return authenticationResponse;
     }
@@ -294,18 +297,20 @@ public class Jelastic {
             totalSize = multipartEntity.getContentLength();
 
             URI uri = URIUtils.createURI(getShema(), config.get("apihoster"), getPort(), getUrlUploader(), null, null);
+            Logger.debug("Upload url : " + uri.toString());
             HttpPost httpPost = new HttpPost(uri);
             httpPost.setEntity(multipartEntity);
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             String responseBody = httpclient.execute(httpPost, responseHandler);
+            Logger.debug("Upload response : " + responseBody);
             Gson gson = new GsonBuilder().setVersion(version).create();
             uploadResponse = gson.fromJson(responseBody, UploadResponse.class);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         } catch (ClientProtocolException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         }
         return uploadResponse;
     }
@@ -324,19 +329,27 @@ public class Jelastic {
 
             UrlEncodedFormEntity entity = new UrlEncodedFormEntity(nameValuePairList, "UTF-8");
 
+            if (Logger.isDebugEnabled()) {
+                for (NameValuePair nameValuePair : nameValuePairList) {
+                    Logger.debug(nameValuePair.getName() + " : " + nameValuePair.getValue());
+                }
+            }
+
             URI uri = URIUtils.createURI(getShema(), config.get("apihoster"), getPort(), getUrlCreateObject(), null, null);
+            Logger.debug("CreateObject url : " + uri.toString());
             HttpPost httpPost = new HttpPost(uri);
             httpPost.setEntity(entity);
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             String responseBody = httpclient.execute(httpPost, responseHandler);
+            Logger.debug("CreateObject response : " + responseBody);
             Gson gson = new GsonBuilder().setVersion(version).create();
             createObjectResponse = gson.fromJson(responseBody, CreateObjectResponse.class);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         } catch (ClientProtocolException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         }
         return createObjectResponse;
     }
@@ -355,18 +368,26 @@ public class Jelastic {
             qparams.add(new BasicNameValuePair("newContext", config.get("context")));
             qparams.add(new BasicNameValuePair("domain", config.get("environment")));
 
+            if (Logger.isDebugEnabled()) {
+                for (NameValuePair nameValuePair : qparams) {
+                    Logger.debug(nameValuePair.getName() + " : " + nameValuePair.getValue());
+                }
+            }
+
             URI uri = URIUtils.createURI(getShema(), config.get("apihoster"), getPort(), getUrlDeploy(), URLEncodedUtils.format(qparams, "UTF-8"), null);
+            Logger.debug("Deploy url : " + uri.toString());
             HttpGet httpPost = new HttpGet(uri);
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             String responseBody = httpclient.execute(httpPost, responseHandler);
+            Logger.debug("Deploy response : " + responseBody);
             Gson gson = new GsonBuilder().setVersion(version).create();
             deployResponse = gson.fromJson(responseBody, DeployResponse.class);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         } catch (ClientProtocolException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.error(e, e.getMessage());
         }
         return deployResponse;
     }
@@ -393,8 +414,8 @@ public class Jelastic {
             SchemeRegistry sr = ccm.getSchemeRegistry();
             sr.register(new Scheme("https", ssf, 443));
             return new DefaultHttpClient(ccm, base.getParams());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            Logger.error(e, e.getMessage());
             return null;
         }
     }
