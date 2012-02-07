@@ -1,5 +1,7 @@
 .idea
 *.pyc
+*.iml
+*.ipr
 .iml
 .ipr
 lib
