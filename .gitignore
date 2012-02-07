@@ -2,3 +2,5 @@
 *.pyc
 .iml
 .ipr
+lib
+dist
