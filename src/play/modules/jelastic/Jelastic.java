@@ -123,17 +123,41 @@ public class Jelastic {
         String apihoster = Play.configuration.getProperty("jelastic.api.apihoster");
 
         String app_war = System.getProperty("jelastic.app.war");
-        config.put("war_file", app_war);
+        if (app_war != null) {
+            config.put("war_file", app_war);
+        } else {
+            throw new IllegalArgumentException("jelastic.app.war is not set or no generate war");
+        }
         email = System.getProperty("jelastic.api.login", email);
-        config.put("login", email);
+        if (email != null && email.length() > 0) {
+            config.put("login", email);
+        } else {
+            throw new IllegalArgumentException("jelastic.api.login is not set in application.conf or from --l");
+        }
         password = System.getProperty("jelastic.api.password", password);
-        config.put("password", password);
+        if (password != null && password.length() > 0) {
+            config.put("password", password);
+        } else {
+            throw new IllegalArgumentException("jelastic.api.password is not set in application.conf or from --p");
+        }
         context = System.getProperty("jelastic.api.context", context);
-        config.put("context", context);
+        if (context != null && context.length() > 0) {
+            config.put("context", context);
+        } else {
+            throw new IllegalArgumentException("jelastic.api.context is not set in application.conf or from --c");
+        }
         environment = System.getProperty("jelastic.api.environment", environment);
-        config.put("environment", environment);
+        if (environment != null && environment.length() > 0) {
+            config.put("environment", environment);
+        } else {
+            throw new IllegalArgumentException("jelastic.api.environment is not set in application.conf or from --e");
+        }
         apihoster = System.getProperty("jelastic.api.apihoster", apihoster);
-        config.put("apihoster", apihoster);
+        if (apihoster != null) {
+            config.put("apihoster", apihoster);
+        } else {
+            throw new IllegalArgumentException("jelastic.api.apihoster is not set in application.conf or from --a");
+        }
     }
 
 
@@ -144,15 +168,10 @@ public class Jelastic {
 
 
         if (args == null || args.length != 1) {
-            System.out.println("bees.api.key is not set in application.conf or from --key");
+            System.out.println("jelastic.app.war is not set in application.conf or from --jelastic.app.war");
         } else {
             Jelastic jelastic = new Jelastic(args[0]);
             jelastic.startProcessing();
-        }
-
-        System.out.println("-----------------");
-        for (String arg : args) {
-            System.out.println(arg);
         }
     }
 
@@ -182,7 +201,7 @@ public class Jelastic {
                     System.out.println(" : OK");
                     System.out.print("Deploy processing...");
                     DeployResponse deployResponse = deploy(authenticationResponse, uploadResponse);
-                    if (deployResponse.getResult() == 0 && deployResponse.getResponse().getResult() ==0 && deployResponse.getResponse().getResponses()[0].getResult() == 0) {
+                    if (deployResponse.getResult() == 0 && deployResponse.getResponse().getResult() == 0 && deployResponse.getResponse().getResponses()[0].getResult() == 0) {
                         System.out.println(" : OK");
                     } else {
                         System.err.println(" : " + deployResponse.getError());

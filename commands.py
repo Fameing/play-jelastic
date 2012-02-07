@@ -50,7 +50,6 @@ def execute(**kargs):
     for item in ["login", "password", "context", "environment", "apihoster"]:
         if eval('options.%s' % item) is not None:
             java_args.append("-Djelastic.api.%s=%s" % (item, eval('options.%s' % item)))
-            print java_args
 
     if "deploy" in jelastic_command:
         war_path =  generate_war(app, env, args)
