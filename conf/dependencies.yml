@@ -1,7 +1,7 @@
 self: play -> jelastic 0.1
 
 require:
-    - play
+    - play 1.2.4
     - com.google.code.gson -> gson [2.1,):
         force: true
     - org.apache.httpcomponents -> httpmime 4.1.1
