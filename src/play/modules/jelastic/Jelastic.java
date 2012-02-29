@@ -109,9 +109,6 @@ public class Jelastic {
     public Jelastic(String command) {
         this.command = command;
         initConfigurations();
-/*        for (String key : config.keySet()) {
-            System.out.println(key + "=" + config.get(key));
-        }*/
     }
 
     private void initConfigurations() {
@@ -163,8 +160,7 @@ public class Jelastic {
 
 
     public static void main(String[] args) {
-        File root = new File(System.getProperty("application.path"));
-        Play.init(root, System.getProperty("play.id", ""));
+        Play.readConfiguration();
         Thread.currentThread().setContextClassLoader(Play.classloader);
 
 
