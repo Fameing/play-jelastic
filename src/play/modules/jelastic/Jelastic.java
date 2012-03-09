@@ -15,6 +15,7 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
@@ -59,6 +60,10 @@ public class Jelastic {
 
     public String getShema() {
         return shema;
+    }
+
+    public void setCookieStore(CookieStore cookieStore) {
+        this.cookieStore = cookieStore;
     }
 
     public CookieStore getCookieStore() {
@@ -253,6 +258,7 @@ public class Jelastic {
             HttpGet httpGet = new HttpGet(uri);
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             String responseBody = httpclient.execute(httpGet, responseHandler);
+            setCookieStore(httpclient.getCookieStore());
             Logger.debug("Authentication response : " + responseBody);
             Gson gson = new GsonBuilder().setVersion(version).create();
             authenticationResponse = gson.fromJson(responseBody, AuthenticationResponse.class);
